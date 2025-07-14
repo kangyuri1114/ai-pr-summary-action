@@ -1,11 +1,3 @@
-// 핵심 로직 (src/index.js)
-    // PR diff 가져오기
-
-    // PR 템플릿 탐지 (.github/pull_request_template.md)
-
-    // OpenAI API 호출하여 요약 생성
-
-    // gh pr edit 또는 콘솔 출력
 const fs = require('fs');
 const core = require('@actions/core');
 const { execSync } = require('child_process');
@@ -18,7 +10,6 @@ const { Configuration, OpenAIApi } = require('openai');
 
     const promptTemplate = detectTemplate(promptInput);
     const diff = execSync('git diff origin/main...HEAD').toString();
-
     const commits = execSync('git log --oneline origin/main..HEAD').toString();
 
     const finalPrompt = `${promptTemplate}\n\n[diff]\n${diff}\n\n[commits]\n${commits}`;
@@ -26,7 +17,9 @@ const { Configuration, OpenAIApi } = require('openai');
 
     console.log('📌 AI Generated PR Summary:\n\n', summary);
 
-    // TODO: 자동 PR 수정 (gh pr edit 등)
+    // 실제 PR 내용 변경
+    execSync(`gh pr edit --body "${escapeForShell(summary)}"`);
+
   } catch (err) {
     core.setFailed(err.message);
   }
@@ -59,13 +52,11 @@ function detectTemplate(userInput) {
 }
 
 async function callOpenAI(prompt, key) {
-  const configuration = new Configuration({
-    apiKey: key,
-  });
-
+  const configuration = new Configuration({ apiKey: key });
   const openai = new OpenAIApi(configuration);
+
   const response = await openai.createChatCompletion({
-    model: 'gpt-4', // 또는 'gpt-3.5-turbo'
+    model: 'gpt-4',
     messages: [
       { role: 'system', content: '당신은 친절한 GitHub PR 요약 비서입니다.' },
       { role: 'user', content: prompt },
@@ -74,4 +65,9 @@ async function callOpenAI(prompt, key) {
   });
 
   return response.data.choices[0].message.content.trim();
+}
+
+// 안전하게 Shell 문자열 escape
+function escapeForShell(str) {
+  return str.replace(/(["\\$`])/g, '\\$1').replace(/\n/g, '\\n');
 }
