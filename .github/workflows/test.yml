@@ -1,0 +1,21 @@
+# 테스트용 워크플로우
+# `.github/workflows/test.yml` 예시:
+
+name: Test AI PR Summary
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # ← 전체 커밋 히스토리 가져오기
+
+      - name: Run AI PR Summary
+        uses: your-org/ai-pr-summary-action@main
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}

@@ -1,0 +1,15 @@
+# composite action
+name: 'AI PR Summary'
+description: '자동으로 Pull Request 내용을 요약합니다.'
+inputs:
+  openai_api_key:
+    required: true
+    description: 'OpenAI API Key (GitHub Secrets에서 설정)'
+  prompt_template:
+    required: false
+    description: '사용자 정의 프롬프트 템플릿'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
